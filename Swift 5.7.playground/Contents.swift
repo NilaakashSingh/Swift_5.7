@@ -1,4 +1,5 @@
 import UIKit
+import RegexBuilder
 
 /// Whats new in Swift 5.7
 
@@ -37,7 +38,7 @@ if let name = model2.name {
 }
 
 
-// MARK: - /**** Mutistatement closure type  ****/
+// MARK: - /**** Multistatement closure type  ****/
 let models = [model1, model2, model3, model4, model5]
 
 // Earlier we had to specify return for map like this `models.map { model -> String?`
@@ -110,7 +111,7 @@ func returnOpaqueTypeMethod<T: Sequence>(from options: T = 10...50) -> () -> [[T
 
 
 // MARK: - /**** Unlock existentials for all protocols  ****/
-let aboutMe: [any Equatable] = ["Nilaakash", "Singh", 27, "Age"]
+let aboutMe: [any Equatable] = ["Matt", "Harbour", 27, "Age"]
 aboutMe.forEach { element in
     if let element = element as? String {
         print("Unlock existentials for all protocols - String element", element)
@@ -128,7 +129,7 @@ let third: Float = 3
 let numbers: [any Numeric] = [first, second, third]
 
 for number in numbers {
-    print(mutipliedBy(number))
+    print("Implicitly opened existentials:", mutipliedBy(number))
 }
 
 func mutipliedBy(_ number: any Numeric) -> any Numeric {
@@ -151,16 +152,56 @@ let e = 50
 // This will hide the unnecessary implementation and show necessary implementation when required
 
 // MARK: - /**** Swift Regex  ****/
+let dummyString = "My name is Matt. I am 27 years old."
+let searchRegex1 = /My name is (.+?). I am (\d+) years old./
+
+if let result = try searchRegex1.wholeMatch(in: dummyString) {
+    print("Swift Regex-Search_1 Name: \(result.1)")
+    print("Swift Regex-Search_1 Age: \(result.2)")
+}
+
+let searchRegex2 = /My name is (?<name>.+?). I am (?<age>\d+) years old./
+if let result = try searchRegex2.wholeMatch(in: dummyString) {
+    print("Swift Regex-Search_2 Name: \(result.name)")
+    print("Swift Regex-Search_2 Age: \(result.age)")
+}
+
+let name = Reference(Substring.self)
+let age = Reference(Int.self)
+let searchRegex3 = Regex {
+    "My name is "
+    Capture(as: name) {
+        OneOrMore(.any, .reluctant)
+    }
+
+    One(".")
+
+    " I am "
+
+    TryCapture {
+        OneOrMore(.digit)
+    } transform: { age in
+        Int(age)
+    }
+    " years old"
+    One(.any)
+}
+
+if let result = try searchRegex3.wholeMatch(in: dummyString)?.output {
+    print("Swift Regex-Search_3 Name: \(result.1)")
+    print("Swift Regex-Search_3 Age: \(result.2)")
+}
+
 
 // MARK: - /**** Distributed actor isolation  ****/
 // This was introduced for Swift server side development where we can make method distributed if we get data in async manner, no need to await from client side. For more information and implementation do refer below link:
 // https://www.swift.org/blog/distributed-actors/
 
+
 // MARK: - /**** BuildPartialBlock for result builders  ****/
 // SE-0348 Dramatically simplifies the overloads required to implement complex result builders, which is part of the reason Swift’s advanced regular expression support was possible. However, it also theoretically removes the 10-view limit for SwiftUI without needing to add variadic generics, so if it’s adopted by the SwiftUI team it will make a lot of folks happy.
 
 
-// MARK: - /**** Distributed actor isolation  ****/
 // MARK: - Command line support
 /// For command line support, we have three new commands
 /// `Swift build --build-snippets`: To build all your source targets including all your snippets includes Builds source targets, including snippets.
